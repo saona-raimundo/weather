@@ -25,59 +25,6 @@ fn App() -> impl IntoView {
     );
 
     view! {
-        <form on:submit=move |_| {data.refetch();}>
-            <fieldset>
-                <legend>"Forecast days: " {move || forecast_days.get()}</legend>
-                <input type="number"
-                    min="1"
-                    max="16"
-                    on:input = move |ev| {
-                        let v = event_target_value(&ev).parse().unwrap_or(2);
-                        log::trace!("setting forcast days to {v}");
-                        // event_target_value is a Leptos helper function
-                        // it functions the same way as event.target.value
-                        // in JavaScript, but smooths out some of the typecasting
-                        // necessary to make this work in Rust
-                        set_forecast_days.set(v);
-                    }
-                    // the `prop:` syntax lets you update a DOM property,
-                    // rather than an attribute.
-                    prop:value=forecast_days
-                />
-            </fieldset>
-            <fieldset>
-                <legend>"Location 🗺: " {move || latitude.get()} ", " {move || longitude.get()}</legend>
-                <label>
-                    {"latitude: "}
-                    <input type="range"
-                        min="-90"
-                        max="90"
-                        step="0.1"
-                        on:input = move |ev| {
-                            let v = event_target_value(&ev).parse().unwrap_or(48.3);
-                            log::trace!("setting latitude days to {v}");
-                            set_latitude.set(v);
-                        }
-                        prop:value=latitude
-                    />
-                </label>
-                <label>
-                    {"longitude: "}
-                    <input type="range"
-                        min="0"
-                        max="180"
-                        step="0.1"
-                        on:input = move |ev| {
-                            let v = event_target_value(&ev).parse().unwrap_or(16.3);
-                            log::trace!("setting longitude days to {v}");
-                            set_longitude.set(v);
-                        }
-                        prop:value=longitude
-                    />
-                </label>
-            </fieldset>
-        </form>
-
         // Present the data
         {move || match data.get() {
             None => view! { <p>"Loading..."</p> }.into_view(),
@@ -102,5 +49,69 @@ fn App() -> impl IntoView {
                 </ErrorBoundary>
             }.into_view(),
         }}
+        <form on:submit=move |_| {data.refetch();}>
+            <fieldset>
+                <legend>"Forecast days: " {move || forecast_days.get()}</legend>
+                <input type="number"
+                    min="1"
+                    max="16"
+                    on:input = move |ev| {
+                        let v = event_target_value(&ev).parse().unwrap_or(2);
+                        log::trace!("setting forcast days to {v}");
+                        // event_target_value is a Leptos helper function
+                        // it functions the same way as event.target.value
+                        // in JavaScript, but smooths out some of the typecasting
+                        // necessary to make this work in Rust
+                        set_forecast_days.set(v);
+                    }
+                    // the `prop:` syntax lets you update a DOM property,
+                    // rather than an attribute.
+                    prop:value=forecast_days
+                />
+            </fieldset>
+            <fieldset>
+                <legend>"Location! 🗺: " {move || latitude.get()} ", " {move || longitude.get()}</legend>
+                // <label for="city">"City: "</label>
+                // <select 
+                //     id="city"
+                //     on:input=move |ev| {
+                //         let (lat, long) = event_target_value(&ev).parse::<(f64, f64)>().unwrap();
+                //         set_latitude.set(lat);
+                //         set_longitude.set(long);
+                //     }
+                //     prop:value=(latitude, longitude)
+                // >
+                //     <option value="(48.3, 16.3)">Vienna</option>
+                //     <option value="">"Other"</option>
+                // </select>
+                <label for="latitude">"latitude: "</label>
+                <input type="range"
+                    id="latitude"
+                    min="-90"
+                    max="90"
+                    step="0.1"
+                    on:input = move |ev| {
+                        let v = event_target_value(&ev).parse().unwrap_or(48.3);
+                        log::trace!("setting latitude days to {v}");
+                        set_latitude.set(v);
+                    }
+                    prop:value=latitude
+                />
+                <label for="longitude">"longitude: "</label>
+                <input type="range"
+                    id="longitude"
+                    min="0"
+                    max="180"
+                    step="0.1"
+                    on:input = move |ev| {
+                        let v = event_target_value(&ev).parse().unwrap_or(16.3);
+                        log::trace!("setting longitude days to {v}");
+                        set_longitude.set(v);
+                    }
+                    prop:value=longitude
+                />
+            </fieldset>
+        </form>
+
     }
 }
