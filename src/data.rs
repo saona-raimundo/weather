@@ -54,27 +54,41 @@ impl Data {
 impl leptos::IntoView for Data {
     fn into_view(self) -> View {
         let Data { hourly, .. } = self;
-        let Hourly { time, precipitation_probability, precipitation, apparent_temperature, .. }  = hourly;
+        let Hourly {
+            time,
+            precipitation_probability,
+            precipitation,
+            apparent_temperature,
+            ..
+        } = hourly;
         // Precipitation
-        let precipitation_size = (time.len(), 8); // We limit at very heavy rain: 8 mm/hour
-        let precipitation_to_y = |mm: f64| {8.0 - mm.min(8.0)};
-        let precipitation_color = (78, 104, 129);
+        let precipitation_with_probability = precipitation.into_iter().zip(precipitation_probability.into_iter()).collect::<Vec<_>>();
         // Temperature
         let max_temperature = 30.;
         let min_temperature = -10.;
-        let temperature_size = (time.len(), max_temperature-min_temperature); // We limit to very hot (30) and very cold (-10)
-        let temperature_to_y = |temperature: f64| { (30. - temperature).min(max_temperature).max(min_temperature) };
+        let temperature_size = (time.len(), max_temperature - min_temperature); // We limit to very hot (30) and very cold (-10)
+        let temperature_to_y = |temperature: f64| {
+            (max_temperature - temperature)
+                .min(max_temperature - min_temperature)
+                .max(0.0)
+        };
         let temperature_color_high = (255, 0, 0);
         let temperature_color_low = (0, 0, 255);
-        let temperature_to_color = |temperature: f64| { 
-            format!("color-mix(in oklab, rgb({}, {}, {}) {}%, rgb({}, {}, {}))",
-                temperature_color_high.0, temperature_color_high.1, temperature_color_high.2,
-                100.0 - temperature_to_y(temperature) / (max_temperature-min_temperature) * 100.0,
-                temperature_color_low.0, temperature_color_low.1, temperature_color_low.2
+        let temperature_to_color = |temperature: f64| {
+            format!(
+                "color-mix(in oklab, rgb({}, {}, {}) {}%, rgb({}, {}, {}))",
+                temperature_color_high.0,
+                temperature_color_high.1,
+                temperature_color_high.2,
+                100.0 - temperature_to_y(temperature) / (max_temperature - min_temperature) * 100.0,
+                temperature_color_low.0,
+                temperature_color_low.1,
+                temperature_color_low.2
             )
         };
         // Wind
         // todo
+
 
         view! {
             <div
@@ -83,57 +97,9 @@ impl leptos::IntoView for Data {
                 <div
                     style="min-width: 20em;"
                 >
-                    <svg
-                        viewBox={ format!("0 0 {} {}", precipitation_size.0, precipitation_size.1 - min_temperature.ceil() as isize) }
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="100%"
-                    >
-                        { 
-                            let mut view = Vec::new();
-                            let mut iter = time.iter();
-                            let mut counter = 0;
-                            let color = &format!("rgb({}, {}, {})", precipitation_color.0, precipitation_color.1, precipitation_color.2);
-                            while iter.nth(8).is_some() {
-                                view.push( view!{
-                                    <line x1={8 + counter * 24} x2={8 + counter * 24} y1=0 y2={precipitation_size.1} stroke={color} stroke-width="0.1">
-                                        <title>"8:00"</title>
-                                    </line>
-                                });
-                                if iter.nth(11).is_some() {
-                                    view.push( view!{
-                                        <line x1={20 + counter * 24} x2={20 + counter * 24} y1=0 y2={precipitation_size.1} stroke={color} stroke-width="0.1">
-                                            <title>"20:00"</title>
-                                        </line>
-                                    })
-                                }
-                                counter += 1;
-                            }
-                            view
-                        }
-                        <line x1="0" x2={precipitation_size.0} y1={precipitation_size.1} y2={precipitation_size.1} opacity={0.1} stroke={format!("rgb({}, {}, {})", precipitation_color.0, precipitation_color.1, precipitation_color.2)} stroke-width="0.1"/>
-                        <line x1="0" x2={precipitation_size.0} y1="0" y2="0" stroke={format!("rgb({}, {}, {})", precipitation_color.0, precipitation_color.1, precipitation_color.2)} stroke-width="0.1"/>
-                        {precipitation
-                            .into_iter()
-                            .zip(precipitation_probability.into_iter())
-                            .enumerate()
-                            .map(|(i, (mm, probability))| 
-                                view! { 
-                                    <circle 
-                                        cx={i} 
-                                        cy={precipitation_to_y(mm)} 
-                                        opacity={probability / 100.0} 
-                                        r="0.2" 
-                                        fill={format!("rgb({}, {}, {})", precipitation_color.0, precipitation_color.1, precipitation_color.2)}
-                                        stroke={format!("rgb({}, {}, {})", precipitation_color.0, precipitation_color.1, precipitation_color.2)}
-                                    >
-                                        <title>{mm} "mm with " {probability} "%"</title>
-                                    </circle>
-                                }
-                            )
-                            .collect_view()
-                        }
-                    </svg>
-                    <h2>{"Precipitation 🌦"}</h2>
+                	<Precipitation
+					    precipitation_with_probability = precipitation_with_probability
+					/>
                 </div>
                 <div
                     style="min-width: 20em;"
@@ -169,29 +135,46 @@ impl leptos::IntoView for Data {
                         <line 
                             x1="0" 
                             x2={temperature_size.0} 
-                            y1="0" 
-                            y2="0" 
+                            y1={temperature_to_y(max_temperature)}
+                            y2={temperature_to_y(max_temperature)}
                             stroke={temperature_to_color(max_temperature)}
                             stroke-width="0.2"
-                        />
+                        >
+                        	<title>{format!("{max_temperature}°C")}</title>
+                    	</line>
                         <line 
                             x1="0" 
                             x2={temperature_size.0} 
-                            y1={max_temperature} 
-                            y2={max_temperature} 
+                            y1={temperature_to_y(0.0)}
+                            y2={temperature_to_y(0.0)}
                             stroke={temperature_to_color(0.0)}
                             opacity="0.5" 
                             stroke-width="0.1"
-                        />
+                        >
+                        	<title>"0°C"</title>
+                    	</line>
                         <line 
                             x1="0" 
                             x2={temperature_size.0} 
-                            y1={temperature_size.1} 
-                            y2={temperature_size.1} 
+                            y1={temperature_to_y(10.0)}
+                            y2={temperature_to_y(10.0)}
+                            stroke={temperature_to_color(10.0)}
+                            opacity="0.8" 
+                            stroke-width="0.1"
+                        >
+                        	<title>"10°C"</title>
+                    	</line>
+                        <line 
+                            x1="0" 
+                            x2={temperature_size.0} 
+                            y1={temperature_to_y(min_temperature)} 
+                            y2={temperature_to_y(min_temperature)}
                             stroke={temperature_to_color(min_temperature)} 
                             opacity="0.1" 
                             stroke-width="0.2"
-                        />
+                        >
+                        	<title>{format!("{min_temperature}°C")}</title>
+                    	</line>
                         {apparent_temperature
                             .into_iter()
                             .enumerate()
@@ -222,6 +205,84 @@ impl leptos::IntoView for Data {
             // </div>
         }
         .into_view()
+    }
+}
+
+#[component]
+fn Precipitation(precipitation_with_probability: Vec<(f64, f64)>) -> impl IntoView {
+	const MAX_PRECIPITATION: f64 = 30.0; // mm
+	const LOWER_MARGIN: f64 = 10.0; // mm
+
+	let (precipitation, precipitation_probability): (Vec<_>, Vec<_>) = precipitation_with_probability.into_iter().unzip();
+    let precipitation_size = (precipitation.len() as f64, MAX_PRECIPITATION + LOWER_MARGIN);
+    let precipitation_to_y = |mm: f64| MAX_PRECIPITATION - mm.min(MAX_PRECIPITATION);
+    let precipitation_color = (78, 104, 129);
+    let color = &format!("rgb({}, {}, {})", precipitation_color.0, precipitation_color.1, precipitation_color.2);
+
+    view! {
+        <svg
+            viewBox={ format!("0 0 {} {}", precipitation_size.0, precipitation_size.1) }
+            xmlns="http://www.w3.org/2000/svg"
+            width="100%"
+        >
+        	// Vertical lines
+            {
+                let mut view = Vec::new();
+                let mut iter = precipitation.iter();
+                let mut counter = 0;
+                while iter.nth(8).is_some() {
+                    view.push( view!{
+                        <line x1={8 + counter * 24} x2={8 + counter * 24} y1=0 y2={precipitation_size.1} stroke={color} stroke-width="0.1">
+                            <title>"8:00"</title>
+                        </line>
+                    });
+                    if iter.nth(11).is_some() {
+                        view.push( view!{
+                            <line x1={20 + counter * 24} x2={20 + counter * 24} y1=0 y2={precipitation_size.1} stroke={color} stroke-width="0.1">
+                                <title>"20:00"</title>
+                            </line>
+                        })
+                    }
+                    counter += 1;
+                }
+                view
+            }
+            // Horizontal lines
+            <line x1="0" x2={precipitation_size.0} y1={precipitation_to_y(0.0)} y2={precipitation_to_y(0.0)} opacity={0.2} stroke={color} stroke-width="0.1">
+            	<title>"Nothing"</title>
+            </line>
+            <line x1="0" x2={precipitation_size.0} y1={precipitation_to_y(2.5)} y2={precipitation_to_y(2.5)} opacity={0.4} stroke={color} stroke-width="0.1">
+            	<title>"Light"</title>
+            </line>
+            <line x1="0" x2={precipitation_size.0} y1={precipitation_to_y(7.6)} y2={precipitation_to_y(7.6)} opacity={0.6} stroke={color} stroke-width="0.1">
+            	<title>"Moderate"</title>
+            </line>
+            <line x1="0" x2={precipitation_size.0} y1={precipitation_to_y(50.0)} y2={precipitation_to_y(50.0)} stroke={color} stroke-width="0.1">
+            	<title>"Heavy"</title>
+            </line>
+            // Point series
+            {precipitation
+                .into_iter()
+                .zip(precipitation_probability.into_iter())
+                .enumerate()
+                .map(|(i, (mm, probability))|
+                    view! {
+                        <circle
+                            cx={i}
+                            cy={precipitation_to_y(mm)}
+                            opacity={probability / 100.0}
+                            r={ if mm > 0.0 {0.2} else {0.05} }
+                            fill={color}
+                            stroke={color}
+                        >
+                            <title>{mm} "mm with " {probability} "%"</title>
+                        </circle>
+                    }
+                )
+                .collect_view()
+            }
+        </svg>
+        <h2>{"Precipitation 🌦"}</h2>
     }
 }
 

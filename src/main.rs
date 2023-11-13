@@ -72,7 +72,7 @@ fn App() -> impl IntoView {
             <fieldset>
                 <legend>"Location! 🗺: " {move || latitude.get()} ", " {move || longitude.get()}</legend>
                 // <label for="city">"City: "</label>
-                // <select 
+                // <select
                 //     id="city"
                 //     on:input=move |ev| {
                 //         let (lat, long) = event_target_value(&ev).parse::<(f64, f64)>().unwrap();
