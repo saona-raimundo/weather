@@ -210,9 +210,8 @@ fn Temperature(temperature: Vec<f64>) -> impl IntoView {
 	                    <circle 
 	                        cx={i} 
 	                        cy={temperature_to_y(temperature)}
-	                        r="0.2" 
+	                        r="0.5" 
 	                        fill={temperature_to_color(temperature)}
-	                        stroke={temperature_to_color(temperature)}
 	                    >
 	                        <title>{temperature} "°C"</title>
 	                    </circle>
@@ -287,9 +286,8 @@ fn Precipitation(precipitation_with_probability: Vec<(f64, f64)>) -> impl IntoVi
                             cx={i}
                             cy={precipitation_to_y(mm)}
                             opacity={probability / 100.0}
-                            r={ if mm > 0.0 {0.2} else {0.05} }
+                            r={ if mm > 0.0 {0.5} else {0.3} }
                             fill={color}
-                            stroke={color}
                         >
                             <title>{mm} "mm with " {probability} "%"</title>
                         </circle>

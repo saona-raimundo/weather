@@ -683,24 +683,24 @@ imports.wbg.__wbindgen_memory = function() {
     const ret = wasm.memory;
     return addHeapObject(ret);
 };
-imports.wbg.__wbindgen_closure_wrapper368 = function(arg0, arg1, arg2) {
-    const ret = makeMutClosure(arg0, arg1, 106, __wbg_adapter_30);
+imports.wbg.__wbindgen_closure_wrapper394 = function(arg0, arg1, arg2) {
+    const ret = makeMutClosure(arg0, arg1, 156, __wbg_adapter_30);
     return addHeapObject(ret);
 };
-imports.wbg.__wbindgen_closure_wrapper370 = function(arg0, arg1, arg2) {
-    const ret = makeMutClosure(arg0, arg1, 106, __wbg_adapter_33);
+imports.wbg.__wbindgen_closure_wrapper396 = function(arg0, arg1, arg2) {
+    const ret = makeMutClosure(arg0, arg1, 156, __wbg_adapter_33);
     return addHeapObject(ret);
 };
-imports.wbg.__wbindgen_closure_wrapper372 = function(arg0, arg1, arg2) {
-    const ret = makeMutClosure(arg0, arg1, 106, __wbg_adapter_30);
+imports.wbg.__wbindgen_closure_wrapper398 = function(arg0, arg1, arg2) {
+    const ret = makeMutClosure(arg0, arg1, 156, __wbg_adapter_30);
     return addHeapObject(ret);
 };
-imports.wbg.__wbindgen_closure_wrapper945 = function(arg0, arg1, arg2) {
-    const ret = makeMutClosure(arg0, arg1, 420, __wbg_adapter_38);
+imports.wbg.__wbindgen_closure_wrapper949 = function(arg0, arg1, arg2) {
+    const ret = makeMutClosure(arg0, arg1, 422, __wbg_adapter_38);
     return addHeapObject(ret);
 };
-imports.wbg.__wbindgen_closure_wrapper2299 = function(arg0, arg1, arg2) {
-    const ret = makeMutClosure(arg0, arg1, 476, __wbg_adapter_41);
+imports.wbg.__wbindgen_closure_wrapper2303 = function(arg0, arg1, arg2) {
+    const ret = makeMutClosure(arg0, arg1, 478, __wbg_adapter_41);
     return addHeapObject(ret);
 };
 
@@ -741,7 +741,7 @@ async function __wbg_init(input) {
     if (wasm !== undefined) return wasm;
 
     if (typeof input === 'undefined') {
-        input = new URL('weather-b8b35965f3ca9de2_bg.wasm', import.meta.url);
+        input = new URL('weather-ecedba4cf525bf66_bg.wasm', import.meta.url);
     }
     const imports = __wbg_get_imports();
 
