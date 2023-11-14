@@ -63,138 +63,27 @@ impl leptos::IntoView for Data {
         } = hourly;
         // Precipitation
         let precipitation_with_probability = precipitation.into_iter().zip(precipitation_probability.into_iter()).collect::<Vec<_>>();
-        // Temperature
-        let max_temperature = 30.;
-        let min_temperature = -10.;
-        let temperature_size = (time.len(), max_temperature - min_temperature); // We limit to very hot (30) and very cold (-10)
-        let temperature_to_y = |temperature: f64| {
-            (max_temperature - temperature)
-                .min(max_temperature - min_temperature)
-                .max(0.0)
-        };
-        let temperature_color_high = (255, 0, 0);
-        let temperature_color_low = (0, 0, 255);
-        let temperature_to_color = |temperature: f64| {
-            format!(
-                "color-mix(in oklab, rgb({}, {}, {}) {}%, rgb({}, {}, {}))",
-                temperature_color_high.0,
-                temperature_color_high.1,
-                temperature_color_high.2,
-                100.0 - temperature_to_y(temperature) / (max_temperature - min_temperature) * 100.0,
-                temperature_color_low.0,
-                temperature_color_low.1,
-                temperature_color_low.2
-            )
-        };
         // Wind
         // todo
 
 
         view! {
             <div
-                style="display: flex; align-items: flex-end; flex-wrap: wrap;"
+                class="graph_container"
             >
                 <div
-                    style="min-width: 20em;"
+                    class="svg_graph"
                 >
                 	<Precipitation
 					    precipitation_with_probability = precipitation_with_probability
 					/>
                 </div>
                 <div
-                    style="min-width: 20em;"
+                    class="svg_graph"
                 >
-                    <svg
-                        viewBox={ format!("0 0 {} {}", temperature_size.0, temperature_size.1) }
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="100%"
-                    >
-                        { 
-                            let mut view = Vec::new();
-                            let mut iter = time.iter();
-                            let mut counter = 0;
-                            let color = &temperature_to_color(max_temperature);
-                            while iter.nth(8).is_some() {
-                                view.push( view!{
-                                    <line x1={8 + counter * 24} x2={8 + counter * 24} y1=0 y2={temperature_size.1} stroke={color} stroke-width="0.1">
-                                        <title>"8:00"</title>
-                                    </line>
-                                });
-                                if iter.nth(11).is_some() {
-                                    view.push( view!{
-                                        <line x1={20 + counter * 24} x2={20 + counter * 24} y1=0 y2={temperature_size.1} stroke={color} stroke-width="0.1">
-                                            <title>"20:00"</title>
-                                        </line>
-                                    })
-                                }
-                                counter += 1;
-                            }
-                            view
-                        }
-                        // x-axis
-                        <line 
-                            x1="0" 
-                            x2={temperature_size.0} 
-                            y1={temperature_to_y(max_temperature)}
-                            y2={temperature_to_y(max_temperature)}
-                            stroke={temperature_to_color(max_temperature)}
-                            stroke-width="0.2"
-                        >
-                        	<title>{format!("{max_temperature}°C")}</title>
-                    	</line>
-                        <line 
-                            x1="0" 
-                            x2={temperature_size.0} 
-                            y1={temperature_to_y(0.0)}
-                            y2={temperature_to_y(0.0)}
-                            stroke={temperature_to_color(0.0)}
-                            opacity="0.5" 
-                            stroke-width="0.1"
-                        >
-                        	<title>"0°C"</title>
-                    	</line>
-                        <line 
-                            x1="0" 
-                            x2={temperature_size.0} 
-                            y1={temperature_to_y(10.0)}
-                            y2={temperature_to_y(10.0)}
-                            stroke={temperature_to_color(10.0)}
-                            opacity="0.8" 
-                            stroke-width="0.1"
-                        >
-                        	<title>"10°C"</title>
-                    	</line>
-                        <line 
-                            x1="0" 
-                            x2={temperature_size.0} 
-                            y1={temperature_to_y(min_temperature)} 
-                            y2={temperature_to_y(min_temperature)}
-                            stroke={temperature_to_color(min_temperature)} 
-                            opacity="0.1" 
-                            stroke-width="0.2"
-                        >
-                        	<title>{format!("{min_temperature}°C")}</title>
-                    	</line>
-                        {apparent_temperature
-                            .into_iter()
-                            .enumerate()
-                            .map(|(i, temperature)| 
-                                view! { 
-                                    <circle 
-                                        cx={i} 
-                                        cy={temperature_to_y(temperature)}
-                                        r="0.2" 
-                                        fill={temperature_to_color(temperature)}
-                                        stroke={temperature_to_color(temperature)}
-                                    >
-                                        <title>{temperature} "°C"</title>
-                                    </circle>
-                                }
-                            )
-                            .collect_view()
-                        }
-                    </svg>
-                    <h2>{"Temperature 🌡"}</h2>
+                	<Temperature
+                		temperature = apparent_temperature
+                	/>
                 </div>
             </div>
             <div>
@@ -208,6 +97,136 @@ impl leptos::IntoView for Data {
     }
 }
 
+#[component]
+fn Temperature(temperature: Vec<f64>) -> impl IntoView {
+    const MAX_TEMPERATURE: f64 = 30.; 
+    const MIN_TEMPERATURE: f64 = -10.; 
+    let temperature_size = (temperature.len(), MAX_TEMPERATURE - MIN_TEMPERATURE); // We limit to very hot and very cold
+    let temperature_to_y = |temperature: f64| {
+        (MAX_TEMPERATURE - temperature)
+            .min(MAX_TEMPERATURE - MIN_TEMPERATURE)
+            .max(0.0)
+    };
+    let temperature_color_high = (255, 0, 0);
+    let temperature_color_low = (0, 0, 255);
+    let temperature_to_color = |temperature: f64| {
+        format!(
+            "color-mix(in oklab, rgb({}, {}, {}) {}%, rgb({}, {}, {}))",
+            temperature_color_high.0,
+            temperature_color_high.1,
+            temperature_color_high.2,
+            100.0 - temperature_to_y(temperature) / (MAX_TEMPERATURE - MIN_TEMPERATURE) * 100.0,
+            temperature_color_low.0,
+            temperature_color_low.1,
+            temperature_color_low.2
+        )
+    };
+
+    view! {
+	    <svg
+	        viewBox={ format!("0 0 {} {}", temperature_size.0, temperature_size.1) }
+	        xmlns="http://www.w3.org/2000/svg"
+	        width="100%"
+	    >
+	        { 
+	            let mut view = Vec::new();
+	            let mut iter = temperature.iter();
+	            let mut counter = 0;
+	            let color = &temperature_to_color(MAX_TEMPERATURE);
+	            while iter.nth(8).is_some() {
+	                view.push( view!{
+	                    <line x1={8 + counter * 24} x2={8 + counter * 24} y1=0 y2={temperature_size.1} stroke={color} stroke-width="0.1">
+	                        <title>"8:00"</title>
+	                    </line>
+	                });
+	                if iter.nth(11).is_some() {
+	                    view.push( view!{
+	                        <line x1={20 + counter * 24} x2={20 + counter * 24} y1=0 y2={temperature_size.1} stroke={color} stroke-width="0.1">
+	                            <title>"20:00"</title>
+	                        </line>
+	                    })
+	                }
+	                counter += 1;
+	            }
+	            view
+	        }
+	        // x-axis
+	        <line 
+	            x1="0" 
+	            x2={temperature_size.0} 
+	            y1={temperature_to_y(MAX_TEMPERATURE)}
+	            y2={temperature_to_y(MAX_TEMPERATURE)}
+	            stroke={temperature_to_color(MAX_TEMPERATURE)}
+	            stroke-width="0.2"
+	        >
+	        	<title>{format!("{MAX_TEMPERATURE}°C")}</title>
+	    	</line>
+	        <line 
+	            x1="0" 
+	            x2={temperature_size.0} 
+	            y1={temperature_to_y(0.0)}
+	            y2={temperature_to_y(0.0)}
+	            stroke={temperature_to_color(0.0)}
+	            opacity="0.5" 
+	            stroke-width="0.1"
+	        >
+	        	<title>"0°C"</title>
+	    	</line>
+	        <line 
+	            x1="0" 
+	            x2={temperature_size.0} 
+	            y1={temperature_to_y(5.0)}
+	            y2={temperature_to_y(5.0)}
+	            stroke={temperature_to_color(5.0)}
+	            opacity="0.8" 
+	            stroke-width="0.1"
+	        >
+	        	<title>"5°C"</title>
+	    	</line>
+	        <line 
+	            x1="0" 
+	            x2={temperature_size.0} 
+	            y1={temperature_to_y(10.0)}
+	            y2={temperature_to_y(10.0)}
+	            stroke={temperature_to_color(10.0)}
+	            opacity="0.8" 
+	            stroke-width="0.1"
+	        >
+	        	<title>"10°C"</title>
+	    	</line>
+	        <line 
+	            x1="0" 
+	            x2={temperature_size.0} 
+	            y1={temperature_to_y(MIN_TEMPERATURE)} 
+	            y2={temperature_to_y(MIN_TEMPERATURE)}
+	            stroke={temperature_to_color(MIN_TEMPERATURE)} 
+	            opacity="0.1" 
+	            stroke-width="0.2"
+	        >
+	        	<title>{format!("{MIN_TEMPERATURE}°C")}</title>
+	    	</line>
+	        {temperature
+	            .into_iter()
+	            .enumerate()
+	            .map(|(i, temperature)| 
+	                view! { 
+	                    <circle 
+	                        cx={i} 
+	                        cy={temperature_to_y(temperature)}
+	                        r="0.2" 
+	                        fill={temperature_to_color(temperature)}
+	                        stroke={temperature_to_color(temperature)}
+	                    >
+	                        <title>{temperature} "°C"</title>
+	                    </circle>
+	                }
+	            )
+	            .collect_view()
+	        }
+	    </svg>
+	    <h2>{"Temperature 🌡"}</h2>    	
+    }
+}
 #[component]
 fn Precipitation(precipitation_with_probability: Vec<(f64, f64)>) -> impl IntoView {
 	const MAX_PRECIPITATION: f64 = 30.0; // mm

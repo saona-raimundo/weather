@@ -45,7 +45,7 @@ fn App() -> impl IntoView {
                         </div>
                     }
                 >
-                    <p>{data}</p>
+                    <div>{data}</div    >
                 </ErrorBoundary>
             }.into_view(),
         }}
