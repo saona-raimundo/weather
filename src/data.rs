@@ -89,9 +89,6 @@ impl leptos::IntoView for Data {
             <div>
                 <p>"📅 " {time.first()} " - " {time.last()} </p>
             </div>
-            // <div>
-            //     <h2>{"Wind"}</h2>
-            // </div>
         }
         .into_view()
     }
