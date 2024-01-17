@@ -76,6 +76,7 @@ impl leptos::IntoView for Data {
                 >
                 	<Precipitation
 					    precipitation_with_probability = precipitation_with_probability
+                        time = &time
 					/>
                 </div>
                 <div
@@ -83,6 +84,7 @@ impl leptos::IntoView for Data {
                 >
                 	<Temperature
                 		temperature = apparent_temperature
+                        time = &time
                 	/>
                 </div>
             </div>
@@ -95,7 +97,7 @@ impl leptos::IntoView for Data {
 }
 
 #[component]
-fn Temperature(temperature: Vec<f64>) -> impl IntoView {
+fn Temperature<'a>(temperature: Vec<f64>, time: &'a [String]) -> impl IntoView {
     const MAX_TEMPERATURE: f64 = 30.; 
     const MIN_TEMPERATURE: f64 = -10.; 
     let temperature_size = (temperature.len(), MAX_TEMPERATURE - MIN_TEMPERATURE); // We limit to very hot and very cold
@@ -132,12 +134,14 @@ fn Temperature(temperature: Vec<f64>) -> impl IntoView {
 	            let color = &temperature_to_color(MAX_TEMPERATURE);
 	            while iter.nth(8).is_some() {
 	                view.push( view!{
+                        <text x={8 + counter * 24} y=2.0 font-size="2px">{format!("{}/8:00", &time[counter][8..10])}</text>
 	                    <line x1={8 + counter * 24} x2={8 + counter * 24} y1=0 y2={temperature_size.1} stroke={color} stroke-width="0.1">
 	                        <title>"8:00"</title>
 	                    </line>
 	                });
 	                if iter.nth(11).is_some() {
 	                    view.push( view!{
+                            <text x={20 + counter * 24} y=2.0 font-size="2px">{format!("{}/20:00", &time[counter][8..10])}</text>
 	                        <line x1={20 + counter * 24} x2={20 + counter * 24} y1=0 y2={temperature_size.1} stroke={color} stroke-width="0.1">
 	                            <title>"20:00"</title>
 	                        </line>
@@ -148,6 +152,7 @@ fn Temperature(temperature: Vec<f64>) -> impl IntoView {
 	            view
 	        }
 	        // x-axis
+            <text x="0" y=(temperature_to_y(MAX_TEMPERATURE) + 2.0) font-size="2px">{format!("{MAX_TEMPERATURE}°C")}</text>
 	        <line 
 	            x1="0" 
 	            x2={temperature_size.0} 
@@ -158,6 +163,7 @@ fn Temperature(temperature: Vec<f64>) -> impl IntoView {
 	        >
 	        	<title>{format!("{MAX_TEMPERATURE}°C")}</title>
 	    	</line>
+            <text x="0" y=(temperature_to_y(0.0)) font-size="2px">{format!("0°C")}</text>
 	        <line 
 	            x1="0" 
 	            x2={temperature_size.0} 
@@ -169,6 +175,7 @@ fn Temperature(temperature: Vec<f64>) -> impl IntoView {
 	        >
 	        	<title>"0°C"</title>
 	    	</line>
+            <text x="0" y=(temperature_to_y(5.0)) font-size="2px">{format!("5°C")}</text>
 	        <line 
 	            x1="0" 
 	            x2={temperature_size.0} 
@@ -180,6 +187,7 @@ fn Temperature(temperature: Vec<f64>) -> impl IntoView {
 	        >
 	        	<title>"5°C"</title>
 	    	</line>
+            <text x="0" y=(temperature_to_y(10.0)) font-size="2px">{format!("10°C")}</text>
 	        <line 
 	            x1="0" 
 	            x2={temperature_size.0} 
@@ -191,6 +199,7 @@ fn Temperature(temperature: Vec<f64>) -> impl IntoView {
 	        >
 	        	<title>"10°C"</title>
 	    	</line>
+            <text x="0" y=(temperature_to_y(MIN_TEMPERATURE)) font-size="2px">{format!("{MIN_TEMPERATURE}°C")}</text>
 	        <line 
 	            x1="0" 
 	            x2={temperature_size.0} 
@@ -224,7 +233,7 @@ fn Temperature(temperature: Vec<f64>) -> impl IntoView {
     }
 }
 #[component]
-fn Precipitation(precipitation_with_probability: Vec<(f64, f64)>) -> impl IntoView {
+fn Precipitation<'a>(precipitation_with_probability: Vec<(f64, f64)>, time: &'a [String]) -> impl IntoView {
 	const MAX_PRECIPITATION: f64 = 30.0; // mm
 	const LOWER_MARGIN: f64 = 10.0; // mm
 
@@ -247,12 +256,14 @@ fn Precipitation(precipitation_with_probability: Vec<(f64, f64)>) -> impl IntoVi
                 let mut counter = 0;
                 while iter.nth(8).is_some() {
                     view.push( view!{
+                        <text x={8 + counter * 24} y=2.0 font-size="2px">{format!("{}/8:00", &time[counter][8..10])}</text>
                         <line x1={8 + counter * 24} x2={8 + counter * 24} y1=0 y2={precipitation_size.1} stroke={color} stroke-width="0.1">
                             <title>"8:00"</title>
                         </line>
                     });
                     if iter.nth(11).is_some() {
                         view.push( view!{
+                            <text x={20 + counter * 24} y=2.0 font-size="2px">{format!("{}/20:00", &time[counter][8..10])}</text>
                             <line x1={20 + counter * 24} x2={20 + counter * 24} y1=0 y2={precipitation_size.1} stroke={color} stroke-width="0.1">
                                 <title>"20:00"</title>
                             </line>
@@ -263,15 +274,19 @@ fn Precipitation(precipitation_with_probability: Vec<(f64, f64)>) -> impl IntoVi
                 view
             }
             // Horizontal lines
+            <text x="0" y=(precipitation_to_y(0.0)) font-size="2px">{format!("Nothing")}</text>
             <line x1="0" x2={precipitation_size.0} y1={precipitation_to_y(0.0)} y2={precipitation_to_y(0.0)} opacity={0.2} stroke={color} stroke-width="0.1">
             	<title>"Nothing"</title>
             </line>
+            <text x="0" y=(precipitation_to_y(2.5)) font-size="2px">{format!("Light")}</text>
             <line x1="0" x2={precipitation_size.0} y1={precipitation_to_y(2.5)} y2={precipitation_to_y(2.5)} opacity={0.4} stroke={color} stroke-width="0.1">
             	<title>"Light"</title>
             </line>
+            <text x="0" y=(precipitation_to_y(7.6)) font-size="2px">{format!("Moderate")}</text>
             <line x1="0" x2={precipitation_size.0} y1={precipitation_to_y(7.6)} y2={precipitation_to_y(7.6)} opacity={0.6} stroke={color} stroke-width="0.1">
             	<title>"Moderate"</title>
             </line>
+            <text x="0" y=(precipitation_to_y(50.0) + 2.0) font-size="2px">{format!("Heavy")}</text>
             <line x1="0" x2={precipitation_size.0} y1={precipitation_to_y(50.0)} y2={precipitation_to_y(50.0)} stroke={color} stroke-width="0.1">
             	<title>"Heavy"</title>
             </line>

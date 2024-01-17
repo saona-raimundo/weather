@@ -52,7 +52,7 @@ fn App() -> impl IntoView {
         <form on:submit=move |_| {data.refetch();}>
             <fieldset>
                 <legend>"Forecast days: " {move || forecast_days.get()}</legend>
-                <input type="number"
+                <input type="range"
                     min="1"
                     max="16"
                     on:input = move |ev| {
