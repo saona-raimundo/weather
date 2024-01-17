@@ -133,15 +133,16 @@ fn Temperature<'a>(temperature: Vec<f64>, time: &'a [String]) -> impl IntoView {
 	            let mut counter = 0;
 	            let color = &temperature_to_color(MAX_TEMPERATURE);
 	            while iter.nth(8).is_some() {
+                    let day = &time.get(counter * 24).map(|s| &s[8..10]).unwrap_or("??");
 	                view.push( view!{
-                        <text x={8 + counter * 24} y=2.0 font-size="2px">{format!("{}/8:00", &time[counter][8..10])}</text>
+                        <text x={8 + counter * 24} y=2.0 font-size="2px">{format!("{day}/8:00")}</text>
 	                    <line x1={8 + counter * 24} x2={8 + counter * 24} y1=0 y2={temperature_size.1} stroke={color} stroke-width="0.1">
 	                        <title>"8:00"</title>
 	                    </line>
 	                });
 	                if iter.nth(11).is_some() {
 	                    view.push( view!{
-                            <text x={20 + counter * 24} y=2.0 font-size="2px">{format!("{}/20:00", &time[counter][8..10])}</text>
+                            <text x={20 + counter * 24} y=2.0 font-size="2px">{format!("{day}/20:00")}</text>
 	                        <line x1={20 + counter * 24} x2={20 + counter * 24} y1=0 y2={temperature_size.1} stroke={color} stroke-width="0.1">
 	                            <title>"20:00"</title>
 	                        </line>
@@ -255,15 +256,16 @@ fn Precipitation<'a>(precipitation_with_probability: Vec<(f64, f64)>, time: &'a 
                 let mut iter = precipitation.iter();
                 let mut counter = 0;
                 while iter.nth(8).is_some() {
+                    let day = &time.get(counter * 24).map(|s| &s[8..10]).unwrap_or("??");
                     view.push( view!{
-                        <text x={8 + counter * 24} y=2.0 font-size="2px">{format!("{}/8:00", &time[counter][8..10])}</text>
+                        <text x={8 + counter * 24} y=2.0 font-size="2px">{format!("{day}/8:00")}</text>
                         <line x1={8 + counter * 24} x2={8 + counter * 24} y1=0 y2={precipitation_size.1} stroke={color} stroke-width="0.1">
                             <title>"8:00"</title>
                         </line>
                     });
                     if iter.nth(11).is_some() {
                         view.push( view!{
-                            <text x={20 + counter * 24} y=2.0 font-size="2px">{format!("{}/20:00", &time[counter][8..10])}</text>
+                            <text x={20 + counter * 24} y=2.0 font-size="2px">{format!("{day}/20:00")}</text>
                             <line x1={20 + counter * 24} x2={20 + counter * 24} y1=0 y2={precipitation_size.1} stroke={color} stroke-width="0.1">
                                 <title>"20:00"</title>
                             </line>
