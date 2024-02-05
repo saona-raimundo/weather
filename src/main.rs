@@ -70,7 +70,7 @@ fn App() -> impl IntoView {
                 />
             </fieldset>
             <fieldset>
-                <legend>"Location! 🗺: " {move || latitude.get()} ", " {move || longitude.get()}</legend>
+                <legend>"Location 🗺: " {move || latitude.get()} "°S , " {move || longitude.get()} "°W"</legend>
                 // <label for="city">"City: "</label>
                 // <select
                 //     id="city"
@@ -112,6 +112,14 @@ fn App() -> impl IntoView {
                 />
             </fieldset>
         </form>
-
+        <details>
+            <summary>
+                API call
+            </summary>
+            https://api.open-meteo.com/v1/forecast?latitude=48.3&longitude=16.3&hourly=apparent_temperature,precipitation_probability,precipitation,wind_speed_10m,wind_direction_10m&forecast_days=2&daily=uv_index_max
+            {let url = Data::api_query(latitude.get(), longitude.get(), forecast_days.get());
+            	view!{ <a href={url.clone()}>{url}</a> }
+            }
+        </details>
     }
 }

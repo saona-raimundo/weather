@@ -3,6 +3,7 @@ set shell := ["nu", "-c"]
 
 # Build, serve and watch
 serve:
+	trunk clean
 	trunk serve --watch src --open 
 
 # Publish to GitHub pages

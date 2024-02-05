@@ -1,3 +1,5 @@
+// Todo: parametrize all svg by the a common global parameter and definie to_y conversion accordingly
+
 use leptos::*;
 use thiserror::Error;
 
@@ -11,6 +13,7 @@ pub struct Data {
     timezone_abbreviation: String,
     elevation: f64,
     hourly: Hourly,
+    daily: Daily,
 }
 
 #[derive(Debug, Default, Clone, serde::Serialize, serde::Deserialize)]
@@ -23,6 +26,12 @@ struct Hourly {
     wind_direction_10m: Vec<f64>,
 }
 
+#[derive(Debug, Default, Clone, serde::Serialize, serde::Deserialize)]
+struct Daily {
+    time: Vec<String>,
+    uv_index_max: Vec<f64>,
+}
+
 #[derive(Error, Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[error("Failed to load data.\n{reason}")]
 pub struct LoadError {
@@ -30,14 +39,22 @@ pub struct LoadError {
 }
 
 impl Data {
+    pub fn api_query(
+        latitude: f64,
+        longitude: f64,
+        forecast_days: usize,) -> String {
+        format!("https://api.open-meteo.com/v1/forecast?latitude={}&longitude={}&hourly=apparent_temperature,precipitation_probability,precipitation,wind_speed_10m,wind_direction_10m&forecast_days={}&daily=uv_index_max", latitude, longitude, forecast_days)
+    }
     /// Load data from open-meteo.com
     pub async fn load(
         latitude: f64,
         longitude: f64,
         forecast_days: usize,
     ) -> Result<Self, LoadError> {
-        let query = format!("https://api.open-meteo.com/v1/forecast?latitude={}&longitude={}&hourly=apparent_temperature,precipitation_probability,precipitation,wind_speed_10m,wind_direction_10m&forecast_days={}", latitude, longitude, forecast_days);
-        log::debug!("{:?}", query);
+        let query = Self::api_query(
+        latitude,
+        longitude,
+        forecast_days);
         let resp = reqwest::get(query).await;
         let data = match resp {
             Ok(resp) => resp.json::<Data>().await.map_err(|e| LoadError {
@@ -53,7 +70,7 @@ impl Data {
 
 impl leptos::IntoView for Data {
     fn into_view(self) -> View {
-        let Data { hourly, .. } = self;
+        let Data { hourly, daily, .. } = self;
         let Hourly {
             time,
             precipitation_probability,
@@ -61,10 +78,16 @@ impl leptos::IntoView for Data {
             apparent_temperature,
             ..
         } = hourly;
+        let uv_index_max = daily.uv_index_max;
+        let daily_time = daily.time;
+        // let Daily {
+        //     uv_index_max,
+        //     time as daily_time
+        //     ..
+        // } = daily;
         // Precipitation
         let precipitation_with_probability = precipitation.into_iter().zip(precipitation_probability.into_iter()).collect::<Vec<_>>();
-        // Wind
-        // todo
+        // Wind todo
 
 
         view! {
@@ -87,6 +110,14 @@ impl leptos::IntoView for Data {
                         time = &time
                 	/>
                 </div>
+                <div
+                    class="svg_graph"
+                >
+                    <UV
+                        uv_index_max = uv_index_max
+                        daily_time = &daily_time
+                    />
+                </div>
             </div>
             <div>
                 <p>"📅 " {time.first()} " - " {time.last()} </p>
@@ -95,6 +126,114 @@ impl leptos::IntoView for Data {
         .into_view()
     }
 }
+
+#[component]
+fn UV<'a>(uv_index_max: Vec<f64>, daily_time: &'a [String]) -> impl IntoView {
+    const MAX_UV: f64 = 11.0; 
+    const MIN_UV: f64 = 0.0; 
+    const ENJOY_UV: f64 = 2.5;  // below this, You can safely enjoy being outside!
+    const SEEK_UV: f64 = 7.5;   // below this, Seek shade during midday hours! Slip on a shirt, slop on sunscreen and slap on hat!
+                                // above this, Avoid being outside during midday hours! Make sure you seek shade! Shirt, sunscreen and hat are a must! 
+    const LOWER_MARGIN: f64 = 10.0;
+    let uv_size = (daily_time.len()*24, 30.0 + LOWER_MARGIN); // MAX_UV - MIN_UV + LOWER_MARGIN);
+    let uv_to_y = |uv: f64| {
+        30.0 / MAX_UV * 
+        (MAX_UV - uv)
+            .min(MAX_UV - MIN_UV)
+            .max(0.0)
+    };
+    let uv_color_high = (255, 0, 255);
+    let uv_color_low = (0, 255, 0);
+    let uv_to_color = |uv: f64| {
+        format!(
+            "color-mix(in hsl shorter hue, rgb({}, {}, {}) {}%, rgb({}, {}, {}))",
+            uv_color_high.0,
+            uv_color_high.1,
+            uv_color_high.2,
+            100.0 - uv_to_y(uv) / (uv_to_y(MAX_UV) - uv_to_y(MIN_UV)).abs() * 100.0,
+            uv_color_low.0,
+            uv_color_low.1,
+            uv_color_low.2
+        )
+    };
+
+    view! {
+        <svg
+            viewBox={ format!("0 0 {} {}", uv_size.0, uv_size.1) }
+            xmlns="http://www.w3.org/2000/svg"
+            width="100%"
+        >
+            // x-axis
+            <text x="0" y=(uv_to_y(MAX_UV) + 2.0) font-size="2px">{format!("{MAX_UV}")}</text>
+            <line 
+                x1="0" 
+                x2={uv_size.0} 
+                y1={uv_to_y(MAX_UV)}
+                y2={uv_to_y(MAX_UV)}
+                stroke={uv_to_color(MAX_UV)}
+                stroke-width="0.2"
+            >
+                <title>{format!("{MAX_UV}")}</title>
+            </line>
+            <text x="0" y=(uv_to_y(MIN_UV)) font-size="2px">{format!("{MIN_UV}")}</text>
+            <line 
+                x1="0" 
+                x2={uv_size.0} 
+                y1={uv_to_y(0.0)}
+                y2={uv_to_y(0.0)}
+                stroke={uv_to_color(0.0)}
+                stroke-width="0.2"
+            >
+                <title>{format!("{MIN_UV}")}</title>
+            </line>
+            <text x="0" y=(uv_to_y(ENJOY_UV)) font-size="2px">{format!("{ENJOY_UV}")}</text>
+            <line 
+                x1="0" 
+                x2={uv_size.0} 
+                y1={uv_to_y(ENJOY_UV)}
+                y2={uv_to_y(ENJOY_UV)}
+                stroke={uv_to_color(ENJOY_UV)}
+                stroke-width="0.2"
+            >
+                <title>{format!("{ENJOY_UV}")}</title>
+            </line>
+            <text x="0" y=(uv_to_y(SEEK_UV)) font-size="2px">{format!("{SEEK_UV}")}</text>
+            <line 
+                x1="0" 
+                x2={uv_size.0} 
+                y1={uv_to_y(SEEK_UV)}
+                y2={uv_to_y(SEEK_UV)}
+                stroke={uv_to_color(SEEK_UV)}
+                stroke-width="0.2"
+            >
+                <title>{format!("{SEEK_UV}")}</title>
+            </line>
+
+            {
+                uv_index_max
+                .into_iter()
+                .enumerate()
+                .map(|(i, uv)| 
+                    (0..24).map(|j| {
+                        view! { 
+                            <circle 
+                                cx={i * 24 + j} 
+                                cy={uv_to_y(uv)}
+                                r="0.5" 
+                                fill={uv_to_color(uv)}
+                            >
+                                <title>{uv}</title>
+                            </circle>
+                        }
+                    }).collect_view()
+                )
+                .collect_view()
+            }
+        </svg>
+        <h2>{"UV ☀"}</h2>      
+    }
+}
+
 
 #[component]
 fn Temperature<'a>(temperature: Vec<f64>, time: &'a [String]) -> impl IntoView {
