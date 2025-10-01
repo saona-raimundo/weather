@@ -12,6 +12,7 @@ serve:
 publish:
 	trunk build --release
 	try { rm --recursive docs }
+	mkdir docs
 	cp --recursive dist/* docs
 	open docs/index.html | str replace --all `href="/` `href="./` | str replace --all `from '/` `from './` | str replace --all `init('/` `init('./` | save docs/index.html --force  
 	git add .
