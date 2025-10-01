@@ -1,4 +1,4 @@
-# use PowerShell instead of sh:
+# Use Nushell
 set shell := ["nu", "-c"]
 
 # Build, serve and watch

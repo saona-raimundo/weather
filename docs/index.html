@@ -1,5 +1,7 @@
-<!DOCTYPE html><html><head>
-		<meta charset="utf-8">
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<link rel="author" content="Raimundo Saona" href="https://saona-raimundo.github.io/">
 		<title>Weather forecast</title>  
@@ -20,10 +22,19 @@
 			}
 			@media only screen and (min-width: 320px)
 		</style>
-	
-<link rel="preload" href="./weather-46fd2923ed0bbbc6_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
-<link rel="modulepreload" href="./weather-46fd2923ed0bbbc6.js"></head>
+	<link rel="modulepreload" href="./weather-3847a73efeea2ba7.js" crossorigin="anonymous" integrity="sha384-rXUeupiJoX4FBmriAihmmqX5XulPCUGazXomysk72RlMXqEsP0v7yqMx5vVbFqbK"><link rel="preload" href="./weather-3847a73efeea2ba7_bg.wasm" crossorigin="anonymous" integrity="sha384-n9yNDaLFpLwgYZUOroLiDrAt2wJLn2g3iXvFfbMCJ6RMaXFoG3VNqYV7z2vTdkXz" as="fetch" type="application/wasm"></head>
 	<body>
 		<noscript>This website uses JavaScript, please enable it to discover it!</noscript>
 	
-<script type="module">import init from './weather-46fd2923ed0bbbc6.js';init('./weather-46fd2923ed0bbbc6_bg.wasm');</script></body></html>
+<script type="module">
+import init, * as bindings from './weather-3847a73efeea2ba7.js';
+const wasm = await init('./weather-3847a73efeea2ba7_bg.wasm');
+
+
+window.wasmBindings = bindings;
+
+
+dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
+
+</script></body>
+</html>

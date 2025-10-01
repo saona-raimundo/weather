@@ -11,10 +11,13 @@ fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
+const DEFAULT_LATITUDE: f64 = 51.5;
+const DEFAULT_LONGITUDE: f64 = -0.1;
+
 #[component]
 fn App() -> impl IntoView {
-    let (latitude, set_latitude) = create_signal(48.3);
-    let (longitude, set_longitude) = create_signal(16.3);
+    let (latitude, set_latitude) = create_signal(DEFAULT_LATITUDE);
+    let (longitude, set_longitude) = create_signal(DEFAULT_LONGITUDE);
     let (forecast_days, set_forecast_days) = create_signal(2);
 
     let data = create_resource(
