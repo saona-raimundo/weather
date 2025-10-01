@@ -103,7 +103,7 @@ fn App() -> impl IntoView {
                 <label for="longitude">"longitude: "</label>
                 <input type="range"
                     id="longitude"
-                    min="0"
+                    min="-180"
                     max="180"
                     step="0.1"
                     on:input = move |ev| {
